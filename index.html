@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Claim your exclusive Lowtops sneakers – the Genesis Drop. Only 101 pixel-crafted pairs exist. Connect, mint, own history.">
+<title>Lowtops Genesis Drop | Claim Yours Today</title>
+  <title>Lowtops // Genesis Drop</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://sdk.vercel.thirdweb.com/latest/thirdweb.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    img.logo {
+      width: 200px;
+      height: auto;
+      margin: 0 auto 25px;
+      border-radius: 20px;
+      box-shadow: 0px 0px 20px rgba(255, 215, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      font-size: 18px;
+      margin-bottom: 30px;
+      color: #cccccc;
+    }
+
+    #wallet-address {
+      margin-top: 10px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      color: #aaa;
+    }
+
+    #buttons {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 15px 25px;
+      margin: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: gold;
+      color: black;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0px 4px 10px rgba(255, 215, 0, 0.4);
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ffd700;
+      box-shadow: 0px 6px 15px rgba(255, 215, 0, 0.6);
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 28px;
+      }
+      p {
+        font-size: 16px;
+      }
+      img.logo {
+        width: 160px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <img src="https://plum-bitter-dormouse-400.mypinata.cloud/ipfs/bafkreieg5dvnxatn4cproy4sadctvqsl6wcmhuv5png32atnsdhm33t4tq" alt="Lowtops Genesis" class="logo">
+
+  <h1>Lowtops // Genesis Drop</h1>
+  <p>Claim your exclusive pixel sneakers today.</p>
+
+  <div id="wallet-address"></div>
+  <div id="buttons">
+    <button id="connect-wallet">Connect Wallet</button>
+    <button id="claim-nft" disabled>Claim Your Lowtops</button>
+  </div>
+
+  <footer>
+    © 2025 Lowtops Genesis Drop
+  </footer>
+
+  <script>
+    const sdk = new thirdweb.ThirdwebSDK("sepolia");
+    let contract;
+    let connectedAddress;
+
+    async function setup() {
+      contract = await sdk.getContract("0x10A33D0DE8a5C557A19ea0EbC7020CE5bde918A7", "nft-drop");
+
+      document.getElementById("connect-wallet").onclick = async () => {
+        try {
+          const wallet = await sdk.wallet.connect();
+          connectedAddress = wallet.address;
+          document.getElementById("wallet-address").innerText = `Connected: ${connectedAddress.substring(0,6)}...${connectedAddress.substring(connectedAddress.length - 4)}`;
+          document.getElementById("claim-nft").disabled = false;
+        } catch (error) {
+          console.error(error);
+          alert("Wallet connection failed");
+        }
+      };
+
+      document.getElementById("claim-nft").onclick = async () => {
+        const button = document.getElementById("claim-nft");
+        button.disabled = true;
+        button.innerText = "Processing...";
+
+        try {
+          const tx = await contract.erc721.claim(1);
+          alert("Success! You've claimed your NFT!");
+          console.log(tx);
+        } catch (error) {
+          console.error(error);
+          alert("Error: " + (error.message || "Something went wrong"));
+        }
+
+        button.disabled = false;
+        button.innerText = "Claim Your Lowtops";
+      };
+    }
+
+    setup();
+  </script>
+
+</body>
+</html>
