@@ -1,161 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Claim your exclusive Lowtops sneakers – the Genesis Drop. Only 101 pixel-crafted pairs exist. Connect, mint, own history.">
-<title>Lowtops Genesis Drop | Claim Yours Today</title>
-  <title>Lowtops // Genesis Drop</title>
-
-  <!-- Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Claim Your Lowtops</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://sdk.vercel.thirdweb.com/latest/thirdweb.min.js"></script>
-
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
+      margin: 0;
+      padding: 40px 20px;
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
       color: white;
       text-align: center;
-      padding: 30px 20px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
     }
-
-    img.logo {
+    img {
       width: 200px;
-      height: auto;
-      margin: 0 auto 25px;
       border-radius: 20px;
-      box-shadow: 0px 0px 20px rgba(255, 215, 0, 0.5);
+      margin-bottom: 30px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
     }
-
     h1 {
       font-size: 36px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
-
     p {
-      font-size: 18px;
-      margin-bottom: 30px;
-      color: #cccccc;
-    }
-
-    #wallet-address {
-      margin-top: 10px;
-      margin-bottom: 20px;
+      color: #ccc;
       font-size: 16px;
-      color: #aaa;
+      margin-bottom: 30px;
     }
-
-    #buttons {
-      margin-top: 20px;
-    }
-
     button {
-      padding: 15px 25px;
-      margin: 10px;
       font-size: 18px;
       font-weight: bold;
+      padding: 12px 28px;
       background-color: gold;
       color: black;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
-      box-shadow: 0px 4px 10px rgba(255, 215, 0, 0.4);
+      box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4);
       transition: 0.3s ease;
+      margin: 10px;
     }
-
     button:hover {
       background-color: #ffd700;
-      box-shadow: 0px 6px 15px rgba(255, 215, 0, 0.6);
+      box-shadow: 0 6px 15px rgba(255, 215, 0, 0.6);
     }
-
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #666;
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 28px;
-      }
-      p {
-        font-size: 16px;
-      }
-      img.logo {
-        width: 160px;
-      }
+    #claim-button {
+      margin-top: 30px;
     }
   </style>
 </head>
-
 <body>
 
-  <img src="https://plum-bitter-dormouse-400.mypinata.cloud/ipfs/bafkreieg5dvnxatn4cproy4sadctvqsl6wcmhuv5png32atnsdhm33t4tq" alt="Lowtops Genesis" class="logo">
+  <img src="https://plum-bitter-dormouse-400.mypinata.cloud/ipfs/bafkreieg5dvnxatn4cproy4sadctvqsl6wcmhuv5png32atnsdhm33t4tq" alt="Lowtops Genesis" />
 
   <h1>Lowtops // Genesis Drop</h1>
-  <p>Claim your exclusive pixel sneakers today.</p>
+  <p>Claim your exclusive 1-of-1 pixel sneakers.</p>
 
-  <div id="wallet-address"></div>
-  <div id="buttons">
-    <button id="connect-wallet">Connect Wallet</button>
-    <button id="claim-nft" disabled>Claim Your Lowtops</button>
-  </div>
-
-  <footer>
-    © 2025 Lowtops Genesis Drop
-  </footer>
+  <div id="wallet-connect"></div>
+  <div id="claim-button">Loading...</div>
 
   <script>
-    const sdk = new thirdweb.ThirdwebSDK("ethereum");
-    let contract;
-    let connectedAddress;
+    async function setupClaimPage() {
+      try {
+        const walletDiv = document.getElementById("wallet-connect");
+        const claimDiv = document.getElementById("claim-button");
+        
+        const connectButton = document.createElement("button");
+        connectButton.innerText = "Connect Wallet";
+        connectButton.onclick = async () => {
+          try {
+            const wallet = await thirdweb.connectWallet();
+            const sdk = new thirdweb.ThirdwebSDK(wallet, { chainId: 1 });
+            const contract = await sdk.getContract("0x10A33D0DE8a5C557A19ea0EbC7020CE5bde918A7", "nft-drop");
 
-    async function setup() {
-      contract = await sdk.getContract("0x10A33D0DE8a5C557A19ea0EbC7020CE5bde918A7", "nft-drop");
+            const claimButton = document.createElement("button");
+            claimButton.innerText = "Claim Your Lowtops";
+            claimButton.onclick = async () => {
+              claimButton.disabled = true;
+              claimButton.innerText = "Processing...";
+              try {
+                const tx = await contract.erc721.claim(1);
+                alert("✅ NFT Claimed!");
+                console.log(tx);
+              } catch (error) {
+                console.error(error);
+                alert("Error: " + (error.message || "Something went wrong."));
+              }
+              claimButton.disabled = false;
+              claimButton.innerText = "Claim Your Lowtops";
+            };
 
-      document.getElementById("connect-wallet").onclick = async () => {
-        try {
-          const wallet = await sdk.wallet.connect();
-          connectedAddress = wallet.address;
-          document.getElementById("wallet-address").innerText = `Connected: ${connectedAddress.substring(0,6)}...${connectedAddress.substring(connectedAddress.length - 4)}`;
-          document.getElementById("claim-nft").disabled = false;
-        } catch (error) {
-          console.error(error);
-          alert("Wallet connection failed");
-        }
-      };
+            claimDiv.innerHTML = "";
+            claimDiv.appendChild(claimButton);
+            walletDiv.innerHTML = "<p style='color:lightgreen;'>Wallet connected ✅</p>";
+          } catch (err) {
+            console.error("Wallet connection failed:", err);
+            walletDiv.innerHTML = "<p style='color:red;'>Wallet connection failed.</p>";
+          }
+        };
 
-      document.getElementById("claim-nft").onclick = async () => {
-        const button = document.getElementById("claim-nft");
-        button.disabled = true;
-        button.innerText = "Processing...";
+        walletDiv.innerHTML = "";
+        walletDiv.appendChild(connectButton);
+        claimDiv.innerHTML = "<p>Connect your wallet to begin.</p>";
 
-        try {
-          const tx = await contract.erc721.claim(1);
-          alert("Success! You've claimed your NFT!");
-          console.log(tx);
-        } catch (error) {
-          console.error(error);
-          alert("Error: " + (error.message || "Something went wrong"));
-        }
-
-        button.disabled = false;
-        button.innerText = "Claim Your Lowtops";
-      };
+      } catch (err) {
+        console.error("Setup failed:", err);
+        document.getElementById("claim-button").innerHTML = "<p style='color:red;'>Error initializing claim system.</p>";
+      }
     }
 
-    setup();
+    setupClaimPage();
   </script>
 
 </body>
