@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <title>Claim Your Lowtops</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Updated Thirdweb SDK and Wallets -->
+  <script src="https://unpkg.com/@thirdweb-dev/sdk/dist/browser/index.umd.js"></script>
+  <script src="https://unpkg.com/@thirdweb-dev/wallets/dist/browser/index.umd.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -45,59 +50,69 @@
       background-color: #ffd700;
       box-shadow: 0 6px 15px rgba(255, 215, 0, 0.6);
     }
+    #claim-button {
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
 
   <img src="https://plum-bitter-dormouse-400.mypinata.cloud/ipfs/bafkreig43uwv37np34av643becetr6zbltehqy27nqbecs7o5xigdlh4ge" alt="Lowtops Genesis" />
+
   <h1>Lowtops // Genesis Drop</h1>
   <p>Claim your exclusive 1-of-1 pixel sneakers.</p>
 
-  <div>
-    <button id="connect-button">Connect Wallet</button>
-    <button id="claim-button" disabled>Claim Your Lowtops</button>
-  </div>
-
-  <!-- Load Thirdweb SDK and Wallets -->
-  <script src="https://unpkg.com/@thirdweb-dev/sdk@latest/dist/thirdweb.umd.js"></script>
-  <script src="https://unpkg.com/@thirdweb-dev/wallets@latest/dist/thirdweb-wallets.umd.min.js"></script>
+  <div id="wallet-connect"></div>
+  <div id="claim-button">Loading...</div>
 
   <script>
     window.onload = async () => {
-      const { ThirdwebSDK } = window.thirdweb;
+      const { ThirdwebSDK } = window.thirdwebSDK;
       const { metamaskWallet } = window.thirdwebWallets;
 
-      const connectButton = document.getElementById("connect-button");
-      const claimButton = document.getElementById("claim-button");
-      let sdk, contract;
+      const walletDiv = document.getElementById("wallet-connect");
+      const claimDiv = document.getElementById("claim-button");
 
+      const connectButton = document.createElement("button");
+      connectButton.innerText = "Connect Wallet";
       connectButton.onclick = async () => {
         try {
           const wallet = await metamaskWallet().connect();
-          sdk = new ThirdwebSDK(wallet);
-          contract = await sdk.getContract("0x10A33D0DE8a5C557A19ea0EbC7020CE5bde918A7", "nft-drop");
-          claimButton.disabled = false;
-          connectButton.innerText = "Wallet Connected ✅";
+          const sdk = new ThirdwebSDK(wallet.getSigner());
+
+          const contract = await sdk.getContract("0x10A33D0DE8a5C557A19ea0EbC7020CE5bde918A7", "nft-drop");
+
+          const claimButton = document.createElement("button");
+          claimButton.innerText = "Claim Your Lowtops";
+          claimButton.onclick = async () => {
+            claimButton.disabled = true;
+            claimButton.innerText = "Processing...";
+            try {
+              const tx = await contract.erc721.claim(1);
+              alert("✅ NFT Claimed!");
+              console.log(tx);
+            } catch (error) {
+              console.error(error);
+              alert("Error: " + (error.message || "Something went wrong."));
+            }
+            claimButton.disabled = false;
+            claimButton.innerText = "Claim Your Lowtops";
+          };
+
+          claimDiv.innerHTML = "";
+          claimDiv.appendChild(claimButton);
+          walletDiv.innerHTML = "<p style='color:lightgreen;'>Wallet connected ✅</p>";
         } catch (err) {
           console.error("Wallet connection failed:", err);
-          alert("❌ Failed to connect wallet.");
+          walletDiv.innerHTML = "<p style='color:red;'>Wallet connection failed.</p>";
         }
       };
 
-      claimButton.onclick = async () => {
-        claimButton.disabled = true;
-        claimButton.innerText = "Claiming...";
-        try {
-          await contract.erc721.claim(1);
-          alert("✅ NFT Claimed!");
-        } catch (err) {
-          console.error(err);
-          alert("❌ Claim failed.");
-        }
-        claimButton.innerText = "Claim Your Lowtops";
-        claimButton.disabled = false;
-      };
+      walletDiv.innerHTML = "";
+      walletDiv.appendChild(connectButton);
+      claimDiv.innerHTML = "<p>Connect your wallet to begin.</p>";
     };
   </script>
+
 </body>
 </html>
