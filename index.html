@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>Claim Your Lowtops</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
-  <script src="https://sdk.vercel.thirdweb.com/latest/thirdweb.min.js"></script>
+  <script src="https://unpkg.com/@thirdweb-dev/wallets@latest/dist/thirdweb-wallets.umd.min.js"></script>
+  <script src="https://unpkg.com/@thirdweb-dev/sdk@latest/dist/thirdweb.umd.js"></script>
   <style>
     body {
       margin: 0;
@@ -46,72 +46,64 @@
       background-color: #ffd700;
       box-shadow: 0 6px 15px rgba(255, 215, 0, 0.6);
     }
-    #claim-button {
-      margin-top: 30px;
-    }
   </style>
 </head>
 <body>
 
   <img src="https://plum-bitter-dormouse-400.mypinata.cloud/ipfs/bafkreieg5dvnxatn4cproy4sadctvqsl6wcmhuv5png32atnsdhm33t4tq" alt="Lowtops Genesis" />
-
   <h1>Lowtops // Genesis Drop</h1>
   <p>Claim your exclusive 1-of-1 pixel sneakers.</p>
 
-  <div id="wallet-connect"></div>
-  <div id="claim-button">Loading...</div>
+  <div id="connect"></div>
+  <div id="claim"></div>
 
   <script>
-    async function setupClaimPage() {
+    const { ThirdwebSDK } = thirdweb;
+    const { LocalWallet, metamaskWallet } = window.thirdwebWallets;
+
+    const chain = "ethereum";
+    const contractAddress = "0x10A33D0DE8a5C557A19ea0EbC7020CE5bde918A7";
+
+    const connectDiv = document.getElementById("connect");
+    const claimDiv = document.getElementById("claim");
+
+    const connectButton = document.createElement("button");
+    connectButton.innerText = "Connect Wallet";
+    connectButton.onclick = async () => {
       try {
-        const walletDiv = document.getElementById("wallet-connect");
-        const claimDiv = document.getElementById("claim-button");
-        
-        const connectButton = document.createElement("button");
-        connectButton.innerText = "Connect Wallet";
-        connectButton.onclick = async () => {
+        const wallet = await metamaskWallet().connect();
+        const sdk = new ThirdwebSDK(wallet.getSigner());
+
+        const contract = await sdk.getContract(contractAddress, "nft-drop");
+
+        connectButton.disabled = true;
+        connectButton.innerText = "Wallet Connected ✅";
+
+        const claimButton = document.createElement("button");
+        claimButton.innerText = "Claim Your Lowtops";
+        claimButton.onclick = async () => {
+          claimButton.disabled = true;
+          claimButton.innerText = "Claiming...";
           try {
-            const wallet = await thirdweb.connectWallet();
-            const sdk = new thirdweb.ThirdwebSDK(wallet, { chainId: 1 });
-            const contract = await sdk.getContract("0x10A33D0DE8a5C557A19ea0EbC7020CE5bde918A7", "nft-drop");
-
-            const claimButton = document.createElement("button");
-            claimButton.innerText = "Claim Your Lowtops";
-            claimButton.onclick = async () => {
-              claimButton.disabled = true;
-              claimButton.innerText = "Processing...";
-              try {
-                const tx = await contract.erc721.claim(1);
-                alert("✅ NFT Claimed!");
-                console.log(tx);
-              } catch (error) {
-                console.error(error);
-                alert("Error: " + (error.message || "Something went wrong."));
-              }
-              claimButton.disabled = false;
-              claimButton.innerText = "Claim Your Lowtops";
-            };
-
-            claimDiv.innerHTML = "";
-            claimDiv.appendChild(claimButton);
-            walletDiv.innerHTML = "<p style='color:lightgreen;'>Wallet connected ✅</p>";
-          } catch (err) {
-            console.error("Wallet connection failed:", err);
-            walletDiv.innerHTML = "<p style='color:red;'>Wallet connection failed.</p>";
+            const tx = await contract.erc721.claim(1);
+            alert("✅ NFT Claimed!");
+            console.log(tx);
+          } catch (error) {
+            console.error(error);
+            alert("❌ Claim failed: " + error.message);
           }
+          claimButton.disabled = false;
+          claimButton.innerText = "Claim Your Lowtops";
         };
 
-        walletDiv.innerHTML = "";
-        walletDiv.appendChild(connectButton);
-        claimDiv.innerHTML = "<p>Connect your wallet to begin.</p>";
-
+        claimDiv.appendChild(claimButton);
       } catch (err) {
-        console.error("Setup failed:", err);
-        document.getElementById("claim-button").innerHTML = "<p style='color:red;'>Error initializing claim system.</p>";
+        console.error("Wallet connection error:", err);
+        alert("Wallet connection failed.");
       }
-    }
+    };
 
-    setupClaimPage();
+    connectDiv.appendChild(connectButton);
   </script>
 
 </body>
