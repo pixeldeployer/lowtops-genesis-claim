@@ -6,8 +6,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
 
   <!-- Updated Thirdweb SDK and Wallets -->
-  <script src="https://unpkg.com/@thirdweb-dev/sdk/dist/browser/index.umd.js"></script>
-  <script src="https://unpkg.com/@thirdweb-dev/wallets/dist/browser/index.umd.js"></script>
+  <script src="https://unpkg.com/@thirdweb-dev/sdk@latest/dist/browser/index.umd.js"></script>
+  <script src="https://unpkg.com/@thirdweb-dev/wallets@latest/dist/browser/index.umd.js"></script>
 
   <style>
     body {
@@ -62,13 +62,13 @@
   <h1>Lowtops // Genesis Drop</h1>
   <p>Claim your exclusive 1-of-1 pixel sneakers.</p>
 
-  <div id="wallet-connect"></div>
-  <div id="claim-button">Loading...</div>
+  <div id="wallet-connect">Loading...</div>
+  <div id="claim-button"></div>
 
   <script>
     window.onload = async () => {
-      const { ThirdwebSDK } = window.thirdwebSDK;
-      const { metamaskWallet } = window.thirdwebWallets;
+      const { ThirdwebSDK } = window.thirdweb;
+      const { metamaskWallet } = window.thirdweb;
 
       const walletDiv = document.getElementById("wallet-connect");
       const claimDiv = document.getElementById("claim-button");
@@ -78,7 +78,7 @@
       connectButton.onclick = async () => {
         try {
           const wallet = await metamaskWallet().connect();
-          const sdk = new ThirdwebSDK(wallet.getSigner());
+          const sdk = ThirdwebSDK.fromWallet(wallet, "ethereum");
 
           const contract = await sdk.getContract("0x10A33D0DE8a5C557A19ea0EbC7020CE5bde918A7", "nft-drop");
 
@@ -110,7 +110,6 @@
 
       walletDiv.innerHTML = "";
       walletDiv.appendChild(connectButton);
-      claimDiv.innerHTML = "<p>Connect your wallet to begin.</p>";
     };
   </script>
 
